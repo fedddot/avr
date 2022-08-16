@@ -1,38 +1,48 @@
 #include "register.h"
 
-
 // constructors
-Kernel::Register::Register() {
+Register::Register::Register() {
     // Default constructor
 };
 
-Kernel::Register::Register(uint8_t *_register_ptr) {
+Register::Register::Register(uint8_t *_register_ptr) {
     set_register_ptr(_register_ptr);
 };
 
 // public methods
-void Kernel::Register::set_bit(KernelTypes::bitnum_t bit, KernelTypes::bitval_t val) {
+//  bitwise operations
+Register::ReturningCode Register::Register::set_bit(BitNumber bit, BitValue val) {
+    if (register_ptr == NULL) {
+        return ERR_REGISTER_POINTS_TO_NULL;
+    }
     switch (val)
     {
-    case KernelTypes::high:
+    case HIGH:
         *register_ptr = (uint8_t)(*register_ptr | (1 << bit));
-    case KernelTypes::low:
+        return SUCCESS;
+    case LOW:
         *register_ptr = (uint8_t)(*register_ptr & ~(1 << bit));
+        return SUCCESS;
+    default:
+        return ERR_WRONG_VALUE_RECEIVED;
     }   
 };
 
-KernelTypes::bitval_t Kernel::Register::get_bit(KernelTypes::bitnum_t bit) {
+Register::BitValue Register::Register::get_bit(BitNumber bit) {
+    if (register_ptr == NULL) {
+        return NOT_DEFINED;
+    }
     if ((uint8_t)(1 << bit) & *register_ptr) {
-        return KernelTypes::high;
+        return HIGH;
     } else {
-        return KernelTypes::low;
+        return LOW;
     }  
 };
 
 //  getters/setters
-uint8_t *Kernel::Register::get_register_ptr() {
+uint8_t *Register::Register::get_register_ptr() {
     return register_ptr;
 };
-void Kernel::Register::set_register_ptr(uint8_t *_register_ptr) {
+void Register::Register::set_register_ptr(uint8_t *_register_ptr) {
     register_ptr = _register_ptr;
 };

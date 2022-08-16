@@ -1,0 +1,1 @@
+g++ -I ./headers regtest.cpp ./sources/register.cpp -o regtest

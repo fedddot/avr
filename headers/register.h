@@ -3,9 +3,31 @@
 
 #include <stdio.h>
 #include <inttypes.h>
-#include "kernel_types.h"
 
-namespace Kernel {
+namespace Register {
+
+    enum ReturningCode {
+        SUCCESS = 0,
+        ERR_REGISTER_POINTS_TO_NULL = -1,
+        ERR_WRONG_VALUE_RECEIVED = -2
+    };
+
+    enum BitNumber {
+        BIT0 = 0,
+        BIT1 = 1,
+        BIT2 = 2,
+        BIT3 = 3,
+        BIT4 = 4,
+        BIT5 = 5,
+        BIT6 = 6,
+        BIT7 = 7
+    };
+
+    enum BitValue {
+        NOT_DEFINED = -1,
+        LOW = 0,
+        HIGH = 1
+    };
 
     class Register {
     protected:
@@ -18,8 +40,8 @@ namespace Kernel {
 
         // public methods
         //  bitwise operations
-        void set_bit(KernelTypes::bitnum_t bit, KernelTypes::bitval_t val);
-        KernelTypes::bitval_t get_bit(KernelTypes::bitnum_t bit);        
+        ReturningCode set_bit(BitNumber bit, BitValue val);
+        BitValue get_bit(BitNumber bit);        
 
         //  getters/setters
         uint8_t *get_register_ptr();
