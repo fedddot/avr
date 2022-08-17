@@ -6,12 +6,6 @@
 
 namespace Register {
 
-    enum ReturningCode {
-        SUCCESS = 0,
-        ERR_REGISTER_POINTS_TO_NULL = -1,
-        ERR_WRONG_VALUE_RECEIVED = -2
-    };
-
     enum BitNumber {
         BIT0 = 0,
         BIT1 = 1,
@@ -24,9 +18,11 @@ namespace Register {
     };
 
     enum BitValue {
-        NOT_DEFINED = -1,
-        LOW = 0,
-        HIGH = 1
+        BIT_LOW = 0,
+        BIT_HIGH = 1,
+        BIT_UNREACHABLE = -1,
+        BIT_WRONG_VALUE = -2,
+        BIT_READ_ONLY = -3
     };
 
     class Register {
@@ -40,13 +36,13 @@ namespace Register {
 
         // public methods
         //  bitwise operations
-        ReturningCode set_bit(BitNumber bit, BitValue val);
+        BitValue set_bit(BitNumber bit, BitValue val);
         BitValue get_bit(BitNumber bit);        
 
         //  getters/setters
         uint8_t *get_register_ptr();
         void set_register_ptr(uint8_t *_register_ptr);
     };    
-};
+}
 
 #endif // _REGISTER_H_
