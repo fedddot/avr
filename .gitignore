@@ -4,4 +4,5 @@
 !*.cpp
 !*.h
 !*.md
+!*.sh
 !Makefile
