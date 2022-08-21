@@ -28,25 +28,23 @@ namespace GPIO {
 
     class GPIO {
     protected:
-        // protected static fields
-        // TODO: Resolve the problem with static declaration of the objects
+        // protected objects fields
+        // TODO: Make it static
         Register::Register mcucr;
         Register::BitNumber pud_bit;
 
-        // protected objects fields
         Register::Register port;
         Register::Register ddr;
         Register::Register pin;
-
-        RegistersStatus GetRegistersStatus(void);
-        PUStatus GetPUStatus(void);
-
     public:
         // constructors
         GPIO();
-        GPIO(Register::Register port, Register::Register ddr, Register::Register pin);
+        GPIO(Register::Register port_reg, Register::Register ddr_reg, Register::Register pin_reg);
 
         // public methods
+        //  status
+        RegistersStatus GetRegistersStatus(void);
+        PUStatus GetPUStatus(void);
         //  configuration
         PinCfg set_pin_cfg(Register::BitNumber pin_number, PinCfg pin_cfg);
         PinCfg get_pin_cfg(Register::BitNumber pin_number);
@@ -63,12 +61,11 @@ namespace GPIO {
         Register::Register get_pin_reg(void);
         void set_pin_reg(Register::Register pin_reg);
         
-        // static public methods
         Register::Register get_mcucr_reg(void);
         void set_mcucr_reg(Register::Register mcucr_reg);
         Register::BitNumber get_pud_bit(void);
-        void set_pud_bit(Register::BitNumber pud_bit);
+        void set_pud_bit(Register::BitNumber pud_bit_num);
     };    
-}
+}               
 
 #endif // _GPIO_H_

@@ -1,32 +1,5 @@
 #include "gpio.h"
 
-// protected methods
-GPIO::RegistersStatus GPIO::GPIO::GetRegistersStatus(void) {
-    // if (NULL == mcucr.get_register_ptr())
-    //     return REGS_UNSET;
-    // if (NULL == port.get_register_ptr())
-    //     return REGS_UNSET;
-    // if (NULL == ddr.get_register_ptr())
-    //     return REGS_UNSET;
-    // if (NULL == pin.get_register_ptr())
-    //     return REGS_UNSET;
-    return REGS_OK;
-}
-
-GPIO::PUStatus GPIO::GPIO::GetPUStatus(void) {
-    // switch (mcucr.get_bit(pud_bit)) {
-
-    //     case Register::BIT_LOW:
-    //         return PU_ENABLED;
-
-    //     case Register::BIT_HIGH:
-    //         return PU_DISABLED;
-        
-    //     default:
-    //         return PU_UNREACHABLE;
-    // }
-    return PU_ENABLED;
-}
 
 // constructors
 GPIO::GPIO::GPIO() {
@@ -40,6 +13,33 @@ GPIO::GPIO::GPIO(Register::Register port_reg, Register::Register ddr_reg, Regist
 }
 
 // public methods
+// status
+GPIO::RegistersStatus GPIO::GPIO::GetRegistersStatus(void) {
+    if (NULL == mcucr.get_register_ptr())
+        return REGS_UNSET;
+    if (NULL == port.get_register_ptr())
+        return REGS_UNSET;
+    if (NULL == ddr.get_register_ptr())
+        return REGS_UNSET;
+    if (NULL == pin.get_register_ptr())
+        return REGS_UNSET;
+    return REGS_OK;
+}
+
+GPIO::PUStatus GPIO::GPIO::GetPUStatus(void) {
+    switch (mcucr.get_bit(pud_bit)) {
+
+        case Register::BIT_LOW:
+            return PU_ENABLED;
+
+        case Register::BIT_HIGH:
+            return PU_DISABLED;
+        
+        default:
+            return PU_UNREACHABLE;
+    }
+}
+
 //  configuration
 GPIO::PinCfg GPIO::GPIO::set_pin_cfg(Register::BitNumber pin_number, PinCfg pin_cfg) {
     if (REGS_UNSET == GetRegistersStatus())
@@ -140,6 +140,6 @@ void GPIO::GPIO::set_mcucr_reg(Register::Register mcucr_reg) {
 Register::BitNumber GPIO::GPIO::get_pud_bit(void) {
     return pud_bit;
 }
-void GPIO::GPIO::set_pud_bit(Register::BitNumber pud_bit) {
-    pud_bit = pud_bit;
+void GPIO::GPIO::set_pud_bit(Register::BitNumber pud_bit_num) {
+    pud_bit = pud_bit_num;
 }
