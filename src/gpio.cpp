@@ -15,8 +15,6 @@ GPIO::GPIO(Register _port_reg, Register _ddr_reg, Register _pin_reg) {
 // public methods
 // status
 gpio_regs_status_t GPIO::get_registers_status(void) {
-    if (NULL == mcucr_reg.get_register_ptr())
-        return GPIO_REGS_UNDEFINED;
     if (NULL == port_reg.get_register_ptr())
         return GPIO_REGS_UNDEFINED;
     if (NULL == ddr_reg.get_register_ptr())
@@ -120,7 +118,7 @@ void GPIO::set_pin_reg(Register _pin_reg) {
     pin_reg = _pin_reg;
 }
 
-// static public methods
+// TODO: find a way to do it static
 void GPIO::set_mcucr_reg(Register _mcucr_reg, reg_bit_number_t _pud_bit) {
     mcucr_reg = _mcucr_reg;
     pud_bit = _pud_bit;

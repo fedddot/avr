@@ -23,9 +23,9 @@ typedef enum gpio_pin_cfg {
 
 class GPIO {
 protected:
-    // protected static fields
-    static Register mcucr_reg;
-    static reg_bit_number_t pud_bit;
+    // TODO: find a way to do it static
+    Register mcucr_reg;
+    reg_bit_number_t pud_bit;
     // protected object fields
     Register port_reg;
     Register ddr_reg;
@@ -56,13 +56,13 @@ public:
     Register get_pin_reg(void);
     void set_pin_reg(Register _pin_reg);
     
-    // static public methods
-    static void set_mcucr_reg(Register _mcucr_reg, reg_bit_number_t _pud_bit);
-    static Register get_mcucr_reg(void);
-    static reg_bit_number_t get_pud_bit(void);
+    // TODO: find a way to do it static
+    void set_mcucr_reg(Register _mcucr_reg, reg_bit_number_t _pud_bit);
+    Register get_mcucr_reg(void);
+    reg_bit_number_t get_pud_bit(void);
     
-    static gpio_pu_status_t get_pu_status(void);
-    static gpio_pu_status_t set_pu_status(gpio_pu_status_t _pu_status);
+    gpio_pu_status_t get_pu_status(void);
+    gpio_pu_status_t set_pu_status(gpio_pu_status_t _pu_status);
 };    
 
 #endif // _GPIO_H_
