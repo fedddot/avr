@@ -1,8 +1,7 @@
 #ifndef _REGISTER_H_
 #define _REGISTER_H_
 
-#include <stdio.h>
-#include <inttypes.h>
+#include <inttypes.h> // uint8_t
 
 typedef enum reg_bit_number {
     BIT0 = 0,

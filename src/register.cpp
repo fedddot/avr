@@ -1,3 +1,5 @@
+#include <stddef.h> // NULL
+
 #include "register.h"
 
 // constructors

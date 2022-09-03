@@ -1,18 +1,13 @@
 #ifndef _GPIO_H_
 #define _GPIO_H_
 
-#include "register.h"
+#include "register.h" /* Register */
+#include "mcu_spreg.h" /* MCUCReg */
 
 typedef enum gpio_regs_status {
     GPIO_REGS_OK = 0,
     GPIO_REGS_UNDEFINED = -1
 } gpio_regs_status_t;  
-
-typedef enum gpio_pu_status {
-    GPIO_PU_DISABLED = 0,
-    GPIO_PU_ENABLED = 1,
-    GPIO_PU_UNDEFINED = -1
-} gpio_pu_status_t;
 
 typedef enum gpio_pin_cfg {
     GPIO_PIN_CFG_INPUT_HiZ = 0,
@@ -24,8 +19,7 @@ typedef enum gpio_pin_cfg {
 class GPIO {
 protected:
     // TODO: find a way to do it static
-    Register mcucr_reg;
-    reg_bit_number_t pud_bit;
+    MCUCReg mcucr_reg;
     // protected object fields
     Register port_reg;
     Register ddr_reg;
@@ -57,12 +51,8 @@ public:
     void set_pin_reg(Register _pin_reg);
     
     // TODO: find a way to do it static
-    void set_mcucr_reg(Register _mcucr_reg, reg_bit_number_t _pud_bit);
-    Register get_mcucr_reg(void);
-    reg_bit_number_t get_pud_bit(void);
-    
-    gpio_pu_status_t get_pu_status(void);
-    gpio_pu_status_t set_pu_status(gpio_pu_status_t _pu_status);
+    void set_mcucr_reg(MCUCReg _mcucr_reg);
+    MCUCReg get_mcucr_reg(void);
 };    
 
 #endif // _GPIO_H_

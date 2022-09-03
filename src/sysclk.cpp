@@ -1,28 +1,23 @@
 #include "sysclk.h" /* header file */
 
-#define _SYSCLK_CLKPS3_CLKPS0_MASK_ 0x0F
-#define _SYSCLK_MAX_PRESC_SHIFTS_ 8
-#define _SYSCLK_DEFAULT_F_OSC_ 8000000
-#define _SUSCLK_DEFAULT_FUSE_PRESC8_ FUSE_FEATURE_ENABLED
-
-
 // constructors
 
 SysCLK::SysCLK() {
-    set_f_osc(_SYSCLK_DEFAULT_F_OSC_);
-    set_fuse_presc8_status(_SUSCLK_DEFAULT_FUSE_PRESC8_);
+
 }
 
-SysCLK::SysCLK(sysclk_freq_t _f_osc, fuse_feature_status_t _fuse_presc8_status, Register _clkpr) {
+SysCLK::SysCLK(sysclk_freq_t _f_osc, 
+               FUSELowReg _fuse_low, 
+               CLKPReg _clkpr) {
     set_f_osc(_f_osc);
-    set_fuse_presc8_status(_fuse_presc8_status);
+    set_fuse_low(_fuse_low);
     set_clkpr(_clkpr);
 }
 
 // public methods
 
 sysclk_freq_t SysCLK::get_clk_sys(void) {
-    if (FUSE_FEATURE_ENABLED == fuse_presc8_status) {
+    if (FUSE_BIT_VAL_PROGRAMMED == fuse_low.get_fuse_bit(FUSE_LOW_CKDIV8)) {
         return f_osc >> 3;
     } else {
         return f_osc;
@@ -30,11 +25,7 @@ sysclk_freq_t SysCLK::get_clk_sys(void) {
 }
 
 sysclk_freq_t SysCLK::get_clk_cpu(void) {
-    uint8_t shifts = 0;
-    shifts = *clkpr.get_register_ptr() & ((reg_t)_SYSCLK_CLKPS3_CLKPS0_MASK_);
-    if (shifts > _SYSCLK_MAX_PRESC_SHIFTS_)
-        return 0;
-    return get_clk_sys() >> shifts;
+    return get_clk_sys() >> clkpr.get_prescaler();
 }
 
 sysclk_freq_t SysCLK::get_clk_io(void) {
@@ -67,18 +58,18 @@ void SysCLK::set_f_osc(sysclk_freq_t _f_osc) {
     f_osc = _f_osc;
 }
 
-fuse_feature_status_t SysCLK::get_fuse_presc8_status(void) {
-    return fuse_presc8_status;
+FUSELowReg SysCLK::get_fuse_low(void) {
+    return fuse_low;
 }
 
-void SysCLK::set_fuse_presc8_status(fuse_feature_status_t _fuse_presc8_status) {
-    fuse_presc8_status = _fuse_presc8_status;
+void SysCLK::set_fuse_low(FUSELowReg _fuse_low) {
+    fuse_low = _fuse_low;
 }
 
-Register SysCLK::get_clkpr(void) {
+CLKPReg SysCLK::get_clkpr(void) {
     return clkpr;
 }
 
-void SysCLK::set_clkpr(Register _clkpr) {
+void SysCLK::set_clkpr(CLKPReg _clkpr) {
     clkpr = _clkpr;
 }

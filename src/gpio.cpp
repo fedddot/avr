@@ -1,5 +1,6 @@
-#include "gpio.h"
+#include <stddef.h> // NULL
 
+#include "gpio.h"
 
 // constructors
 GPIO::GPIO() {
@@ -36,7 +37,7 @@ gpio_pin_cfg_t GPIO::set_pin_cfg(reg_bit_number_t _pin_number, gpio_pin_cfg_t _p
             return GPIO_PIN_CFG_INPUT_HiZ;
 
         case GPIO_PIN_CFG_INPUT_PU:
-            if (GPIO_PU_ENABLED != get_pu_status())
+            if (BIT_LOW != mcucr_reg.get_pud())
                 return GPIO_PIN_CFG_UNDEFINED;
             ddr_reg.set_bit(_pin_number, BIT_LOW);
             port_reg.set_bit(_pin_number, BIT_HIGH);
@@ -66,7 +67,7 @@ gpio_pin_cfg_t GPIO::get_pin_cfg(reg_bit_number_t _pin_number) {
             return GPIO_PIN_CFG_INPUT_HiZ;
         // Pulled-Up - need to check PUD bit
         case BIT_HIGH:
-            if (GPIO_PU_ENABLED == get_pu_status())
+            if (BIT_LOW != mcucr_reg.get_pud())
                 return GPIO_PIN_CFG_INPUT_PU;
             return GPIO_PIN_CFG_UNDEFINED;      
         default:
@@ -119,52 +120,10 @@ void GPIO::set_pin_reg(Register _pin_reg) {
 }
 
 // TODO: find a way to do it static
-void GPIO::set_mcucr_reg(Register _mcucr_reg, reg_bit_number_t _pud_bit) {
+void GPIO::set_mcucr_reg(MCUCReg _mcucr_reg) {
     mcucr_reg = _mcucr_reg;
-    pud_bit = _pud_bit;
 }
 
-Register GPIO::get_mcucr_reg(void) {
+MCUCReg GPIO::get_mcucr_reg(void) {
     return mcucr_reg;
-}
-
-reg_bit_number_t GPIO::get_pud_bit(void) {
-    return pud_bit;
-}
-  
-gpio_pu_status_t GPIO::get_pu_status(void) {
-    if (NULL == mcucr_reg.get_register_ptr()) {
-        return GPIO_PU_UNDEFINED;
-    }
-    switch (mcucr_reg.get_bit(pud_bit)) {
-
-        case BIT_LOW:
-            return GPIO_PU_ENABLED;
-
-        case BIT_HIGH:
-            return GPIO_PU_DISABLED;
-        
-        default:
-            break;
-    }
-    return GPIO_PU_UNDEFINED;
-}
-
-gpio_pu_status_t GPIO::set_pu_status(gpio_pu_status_t _pu_status) {
-    if (NULL == mcucr_reg.get_register_ptr()) {
-        return GPIO_PU_UNDEFINED;
-    }
-    switch (_pu_status) {
-    case GPIO_PU_ENABLED:
-        if (BIT_LOW == mcucr_reg.set_bit(pud_bit, BIT_LOW))
-            return GPIO_PU_ENABLED;
-        break;
-    case GPIO_PU_DISABLED:
-        if (BIT_HIGH == mcucr_reg.set_bit(pud_bit, BIT_HIGH))
-            return GPIO_PU_DISABLED;
-        break;        
-    default:
-        break;
-    }
-    return GPIO_PU_UNDEFINED;
 }

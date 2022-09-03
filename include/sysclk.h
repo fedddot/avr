@@ -4,21 +4,23 @@
 #include <inttypes.h> // int32_t
 
 #include "register.h" // Register
-#include "fuse.h" // fuse_feature_status_t
+#include "fuses.h" // fuse_feature_status_t
+#include "mcu_spreg.h" // CLKPReg
 
 typedef uint32_t sysclk_freq_t;
 
 class SysCLK {
 protected:
     sysclk_freq_t f_osc;
-    // TODO: read from LOW_FUSE
-    fuse_feature_status_t fuse_presc8_status;
-    Register clkpr;
+    FUSELowReg fuse_low;
+    CLKPReg clkpr;
 public:
     // constructors
 
     SysCLK();
-    SysCLK(sysclk_freq_t _f_osc, fuse_feature_status_t _fuse_presc8_status, Register _clkpr);
+    SysCLK(sysclk_freq_t _f_osc, 
+           FUSELowReg _fuse_low, 
+           CLKPReg _clkpr);
 
     // public methods
 
@@ -35,11 +37,11 @@ public:
     sysclk_freq_t get_f_osc(void);
     void set_f_osc(sysclk_freq_t _fosc);
 
-    fuse_feature_status_t get_fuse_presc8_status(void);
-    void set_fuse_presc8_status(fuse_feature_status_t _fuse_presc8_status);
+    FUSELowReg get_fuse_low(void);
+    void set_fuse_low(FUSELowReg _fuse_low);
 
-    Register get_clkpr(void);
-    void set_clkpr(Register _clkpr);
+    CLKPReg get_clkpr(void);
+    void set_clkpr(CLKPReg _clkpr);
 };              
 
 #endif // _SYSCLK_H_
