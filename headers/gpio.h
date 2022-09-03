@@ -1,71 +1,68 @@
 #ifndef _GPIO_H_
-#  define _GPIO_H_
+#define _GPIO_H_
 
-#include <stdio.h>
 #include "register.h"
 
-namespace GPIO {
+typedef enum gpio_regs_status {
+    GPIO_REGS_OK = 0,
+    GPIO_REGS_UNDEFINED = -1
+} gpio_regs_status_t;  
 
-    enum RegistersStatus {
-        REGS_OK = 0,
-        REGS_UNSET = -1
-    };  
+typedef enum gpio_pu_status {
+    GPIO_PU_DISABLED = 0,
+    GPIO_PU_ENABLED = 1,
+    GPIO_PU_UNDEFINED = -1
+} gpio_pu_status_t;
 
-    enum PinCfg {
-        PIN_CFG_INPUT_HiZ = 0,
-        PIN_CFG_INPUT_PU = 1,
-        PIN_CFG_OUTPUT = 2,
-        PIN_CFG_UNREACHABLE = -1,
-        PIN_CFG_IMPOSSIBLE = -2,
-        PIN_CFG_INCORRECT = -3
-    };
+typedef enum gpio_pin_cfg {
+    GPIO_PIN_CFG_INPUT_HiZ = 0,
+    GPIO_PIN_CFG_INPUT_PU = 1,
+    GPIO_PIN_CFG_OUTPUT = 2,
+    GPIO_PIN_CFG_UNDEFINED = -1
+} gpio_pin_cfg_t;
 
-    enum PUStatus {
-        PU_DISABLED = 0,
-        PU_ENABLED = 1,
-        PU_UNREACHABLE = -1
-    };
+class GPIO {
+protected:
+    // protected static fields
+    static Register mcucr_reg;
+    static reg_bit_number_t pud_bit;
+    // protected object fields
+    Register port_reg;
+    Register ddr_reg;
+    Register pin_reg;
+public:
+    // constructors
+    GPIO();
+    GPIO(Register _port_reg, Register _ddr_reg, Register _pin_reg);
 
-    class GPIO {
-    protected:
-        // protected objects fields
-        // TODO: Make it static
-        Register::Register mcucr;
-        Register::BitNumber pud_bit;
+    // public methods
+    //  status
+    gpio_regs_status_t get_registers_status(void);
+    //  configuration
+    gpio_pin_cfg_t set_pin_cfg(reg_bit_number_t _pin_number, gpio_pin_cfg_t _pin_cfg);
+    gpio_pin_cfg_t get_pin_cfg(reg_bit_number_t _pin_number);
 
-        Register::Register port;
-        Register::Register ddr;
-        Register::Register pin;
-    public:
-        // constructors
-        GPIO();
-        GPIO(Register::Register port_reg, Register::Register ddr_reg, Register::Register pin_reg);
+    //  i/o operations
+    reg_bit_value_t set_pin(reg_bit_number_t _pin_number, reg_bit_value_t _value);
+    reg_bit_value_t get_pin(reg_bit_number_t _pin_number);
 
-        // public methods
-        //  status
-        RegistersStatus GetRegistersStatus(void);
-        PUStatus GetPUStatus(void);
-        //  configuration
-        PinCfg set_pin_cfg(Register::BitNumber pin_number, PinCfg pin_cfg);
-        PinCfg get_pin_cfg(Register::BitNumber pin_number);
+    //  getters/setters
+    Register get_port_reg(void);
+    void set_port_reg(Register _port_reg);
 
-        //  i/o operations
-        Register::BitValue set_pin(Register::BitNumber pin_number, Register::BitValue value);
-        Register::BitValue get_pin(Register::BitNumber pin_number);
+    Register get_ddr_reg(void);
+    void set_ddr_reg(Register _ddr_reg);
 
-        //  getters/setters
-        Register::Register get_port_reg(void);
-        void set_port_reg(Register::Register port_reg);
-        Register::Register get_ddr_reg(void);
-        void set_ddr_reg(Register::Register ddr_reg);
-        Register::Register get_pin_reg(void);
-        void set_pin_reg(Register::Register pin_reg);
-        
-        Register::Register get_mcucr_reg(void);
-        void set_mcucr_reg(Register::Register mcucr_reg);
-        Register::BitNumber get_pud_bit(void);
-        void set_pud_bit(Register::BitNumber pud_bit_num);
-    };    
-}               
+    Register get_pin_reg(void);
+    void set_pin_reg(Register _pin_reg);
+    
+    // static public methods
+    static void set_mcucr_reg(Register _mcucr_reg, reg_bit_number_t _pud_bit);
+    static Register get_mcucr_reg(void);
+    static reg_bit_number_t get_pud_bit(void);
+    
+    static gpio_pu_status_t get_pu_status(void);
+    static gpio_pu_status_t set_pu_status(gpio_pu_status_t _pu_status);
+};    
 
 #endif // _GPIO_H_

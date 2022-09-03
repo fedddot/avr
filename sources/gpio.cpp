@@ -2,144 +2,171 @@
 
 
 // constructors
-GPIO::GPIO::GPIO() {
+GPIO::GPIO() {
     // default constructor
 }
 
-GPIO::GPIO::GPIO(Register::Register port_reg, Register::Register ddr_reg, Register::Register pin_reg) {
-    set_port_reg(port_reg);
-    set_ddr_reg(ddr_reg);
-    set_pin_reg(pin_reg);
+GPIO::GPIO(Register _port_reg, Register _ddr_reg, Register _pin_reg) {
+    set_port_reg(_port_reg);
+    set_ddr_reg(_ddr_reg);
+    set_pin_reg(_pin_reg);
 }
 
 // public methods
 // status
-GPIO::RegistersStatus GPIO::GPIO::GetRegistersStatus(void) {
-    if (NULL == mcucr.get_register_ptr())
-        return REGS_UNSET;
-    if (NULL == port.get_register_ptr())
-        return REGS_UNSET;
-    if (NULL == ddr.get_register_ptr())
-        return REGS_UNSET;
-    if (NULL == pin.get_register_ptr())
-        return REGS_UNSET;
-    return REGS_OK;
-}
-
-GPIO::PUStatus GPIO::GPIO::GetPUStatus(void) {
-    switch (mcucr.get_bit(pud_bit)) {
-
-        case Register::BIT_LOW:
-            return PU_ENABLED;
-
-        case Register::BIT_HIGH:
-            return PU_DISABLED;
-        
-        default:
-            return PU_UNREACHABLE;
-    }
+gpio_regs_status_t GPIO::get_registers_status(void) {
+    if (NULL == mcucr_reg.get_register_ptr())
+        return GPIO_REGS_UNDEFINED;
+    if (NULL == port_reg.get_register_ptr())
+        return GPIO_REGS_UNDEFINED;
+    if (NULL == ddr_reg.get_register_ptr())
+        return GPIO_REGS_UNDEFINED;
+    if (NULL == pin_reg.get_register_ptr())
+        return GPIO_REGS_UNDEFINED;
+    return GPIO_REGS_OK;
 }
 
 //  configuration
-GPIO::PinCfg GPIO::GPIO::set_pin_cfg(Register::BitNumber pin_number, PinCfg pin_cfg) {
-    if (REGS_UNSET == GetRegistersStatus())
-        return PIN_CFG_UNREACHABLE;
+gpio_pin_cfg_t GPIO::set_pin_cfg(reg_bit_number_t _pin_number, gpio_pin_cfg_t _pin_cfg) {
+    if (GPIO_REGS_UNDEFINED == get_registers_status())
+        return GPIO_PIN_CFG_UNDEFINED;
 
-    switch (pin_cfg) {
-        case PIN_CFG_INPUT_HiZ:
-            ddr.set_bit(pin_number, Register::BIT_LOW);
-            port.set_bit(pin_number, Register::BIT_LOW);
-            return PIN_CFG_INPUT_HiZ;
+    switch (_pin_cfg) {
+        case GPIO_PIN_CFG_INPUT_HiZ:
+            ddr_reg.set_bit(_pin_number, BIT_LOW);
+            port_reg.set_bit(_pin_number, BIT_LOW);
+            return GPIO_PIN_CFG_INPUT_HiZ;
 
-        case PIN_CFG_INPUT_PU:
-            if (PU_DISABLED == GetPUStatus())
-                return PIN_CFG_IMPOSSIBLE;
-            ddr.set_bit(pin_number, Register::BIT_LOW);
-            port.set_bit(pin_number, Register::BIT_HIGH);
-            return PIN_CFG_INPUT_PU;
+        case GPIO_PIN_CFG_INPUT_PU:
+            if (GPIO_PU_ENABLED != get_pu_status())
+                return GPIO_PIN_CFG_UNDEFINED;
+            ddr_reg.set_bit(_pin_number, BIT_LOW);
+            port_reg.set_bit(_pin_number, BIT_HIGH);
+            return GPIO_PIN_CFG_INPUT_PU;
 
-        case PIN_CFG_OUTPUT:
-            ddr.set_bit(pin_number, Register::BIT_HIGH);
-            port.set_bit(pin_number, Register::BIT_LOW);
-            return PIN_CFG_OUTPUT;
+        case GPIO_PIN_CFG_OUTPUT:
+            ddr_reg.set_bit(_pin_number, BIT_HIGH);
+            port_reg.set_bit(_pin_number, BIT_LOW);
+            return GPIO_PIN_CFG_OUTPUT;
 
         default:
-            return PIN_CFG_INCORRECT;
+            break;
     }
+    return GPIO_PIN_CFG_UNDEFINED;
 }
 
-GPIO::PinCfg GPIO::GPIO::get_pin_cfg(Register::BitNumber pin_number) {
-    if (REGS_UNSET == GetRegistersStatus())
-        return PIN_CFG_UNREACHABLE;    
+gpio_pin_cfg_t GPIO::get_pin_cfg(reg_bit_number_t _pin_number) {
+    if (GPIO_REGS_UNDEFINED == get_registers_status())
+        return GPIO_PIN_CFG_UNDEFINED;    
 
-    switch (ddr.get_bit(pin_number))
-    {
+    switch (ddr_reg.get_bit(_pin_number)) {
     // pin configured as input
-    case Register::BIT_LOW:
-        switch (port.get_bit(pin_number))
-        {
+    case BIT_LOW:
+        switch (port_reg.get_bit(_pin_number)) {
         // HiZ
-        case Register::BIT_LOW:
-            return PIN_CFG_INPUT_HiZ;
+        case BIT_LOW:
+            return GPIO_PIN_CFG_INPUT_HiZ;
         // Pulled-Up - need to check PUD bit
-        case Register::BIT_HIGH:
-            if (PU_DISABLED == GetPUStatus())
-                return PIN_CFG_IMPOSSIBLE;
-            return PIN_CFG_INPUT_PU;      
-        // port unreachable  
+        case BIT_HIGH:
+            if (GPIO_PU_ENABLED == get_pu_status())
+                return GPIO_PIN_CFG_INPUT_PU;
+            return GPIO_PIN_CFG_UNDEFINED;      
         default:
-            return PIN_CFG_UNREACHABLE;
+            return GPIO_PIN_CFG_UNDEFINED;
         }
     // pin configured as output
-    case Register::BIT_HIGH:
-        return PIN_CFG_OUTPUT;
+    case BIT_HIGH:
+        return GPIO_PIN_CFG_OUTPUT;
     // ddr unreachable
     default:
-        return PIN_CFG_UNREACHABLE;
+        return GPIO_PIN_CFG_UNDEFINED;
     }
+    return GPIO_PIN_CFG_UNDEFINED;
 }
 
 //  i/o operations
-Register::BitValue GPIO::GPIO::set_pin(Register::BitNumber pin_number, Register::BitValue value) {
-    if (PIN_CFG_OUTPUT != get_pin_cfg(pin_number))
-        return Register::BIT_READ_ONLY;
-    return port.set_bit(pin_number, value);
+reg_bit_value_t GPIO::set_pin(reg_bit_number_t _pin_number, reg_bit_value_t _value) {
+    if (GPIO_PIN_CFG_OUTPUT != get_pin_cfg(_pin_number))
+        return BIT_UNDEFINED;
+    return port_reg.set_bit(_pin_number, _value);
 }
 
-Register::BitValue GPIO::GPIO::get_pin(Register::BitNumber pin_number) {
-    return pin.get_bit(pin_number);
+reg_bit_value_t GPIO::get_pin(reg_bit_number_t _pin_number) {
+    return pin_reg.get_bit(_pin_number);
 }
 
 //  getters/setters
-Register::Register GPIO::GPIO::get_port_reg(void) {
-    return port;
+Register GPIO::get_port_reg(void) {
+    return port_reg;
 }
-void GPIO::GPIO::set_port_reg(Register::Register port_reg) {
-    port = port_reg;
+
+void GPIO::set_port_reg(Register _port_reg) {
+    port_reg = _port_reg;
 }
-Register::Register GPIO::GPIO::get_ddr_reg(void) {
-    return ddr;
+
+Register GPIO::get_ddr_reg(void) {
+    return ddr_reg;
 }
-void GPIO::GPIO::set_ddr_reg(Register::Register ddr_reg) {
-    ddr = ddr_reg;
+
+void GPIO::set_ddr_reg(Register _ddr_reg) {
+    ddr_reg = _ddr_reg;
 }
-Register::Register GPIO::GPIO::get_pin_reg(void) {
-    return pin;
+
+Register GPIO::get_pin_reg(void) {
+    return pin_reg;
 }
-void GPIO::GPIO::set_pin_reg(Register::Register pin_reg) {
-    pin = pin_reg;
+
+void GPIO::set_pin_reg(Register _pin_reg) {
+    pin_reg = _pin_reg;
 }
 
 // static public methods
-Register::Register GPIO::GPIO::get_mcucr_reg(void) {
-    return mcucr;
+void GPIO::set_mcucr_reg(Register _mcucr_reg, reg_bit_number_t _pud_bit) {
+    mcucr_reg = _mcucr_reg;
+    pud_bit = _pud_bit;
 }
-void GPIO::GPIO::set_mcucr_reg(Register::Register mcucr_reg) {
-    mcucr = mcucr_reg;
+
+Register GPIO::get_mcucr_reg(void) {
+    return mcucr_reg;
 }
-Register::BitNumber GPIO::GPIO::get_pud_bit(void) {
+
+reg_bit_number_t GPIO::get_pud_bit(void) {
     return pud_bit;
 }
-void GPIO::GPIO::set_pud_bit(Register::BitNumber pud_bit_num) {
-    pud_bit = pud_bit_num;
+  
+gpio_pu_status_t GPIO::get_pu_status(void) {
+    if (NULL == mcucr_reg.get_register_ptr()) {
+        return GPIO_PU_UNDEFINED;
+    }
+    switch (mcucr_reg.get_bit(pud_bit)) {
+
+        case BIT_LOW:
+            return GPIO_PU_ENABLED;
+
+        case BIT_HIGH:
+            return GPIO_PU_DISABLED;
+        
+        default:
+            break;
+    }
+    return GPIO_PU_UNDEFINED;
+}
+
+gpio_pu_status_t GPIO::set_pu_status(gpio_pu_status_t _pu_status) {
+    if (NULL == mcucr_reg.get_register_ptr()) {
+        return GPIO_PU_UNDEFINED;
+    }
+    switch (_pu_status) {
+    case GPIO_PU_ENABLED:
+        if (BIT_LOW == mcucr_reg.set_bit(pud_bit, BIT_LOW))
+            return GPIO_PU_ENABLED;
+        break;
+    case GPIO_PU_DISABLED:
+        if (BIT_HIGH == mcucr_reg.set_bit(pud_bit, BIT_HIGH))
+            return GPIO_PU_DISABLED;
+        break;        
+    default:
+        break;
+    }
+    return GPIO_PU_UNDEFINED;
 }
