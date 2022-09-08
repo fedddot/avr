@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "version.h": "c",
+        "iostream": "cpp",
+        "atomic": "cpp",
+        "cstdint": "cpp",
+        "*.tcc": "cpp",
+        "compare": "cpp",
+        "random": "cpp",
+        "limits": "cpp",
+        "new": "cpp",
+        "numeric": "cpp",
+        "cmath": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp"
+    }
+}

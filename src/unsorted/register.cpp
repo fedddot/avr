@@ -1,8 +1,7 @@
-#include <stddef.h> // NULL
-
 #include "register.h"
 
-// constructors
+//  constructors
+
 Register::Register() {
     // Default constructor
 }
@@ -11,9 +10,10 @@ Register::Register(reg_t *_register_ptr) {
     set_register_ptr(_register_ptr);
 }
 
-// public methods
-//  bitwise operations
-reg_bit_value_t Register::set_bit(reg_bit_number_t _bit, reg_bit_value_t _val) {
+//  public methods
+//      bitwise operations
+
+reg_bit_value_t Register::set_bit(reg_bits_t _bit, reg_bit_value_t _val) {
     if (register_ptr == NULL) 
         return BIT_UNDEFINED;
     
@@ -29,7 +29,7 @@ reg_bit_value_t Register::set_bit(reg_bit_number_t _bit, reg_bit_value_t _val) {
     }   
 }
 
-reg_bit_value_t Register::get_bit(reg_bit_number_t _bit) {
+reg_bit_value_t Register::get_bit(reg_bits_t _bit) {
     if (register_ptr == NULL) 
         return BIT_UNDEFINED;
     if ((1 << _bit) & *register_ptr) 
@@ -39,6 +39,7 @@ reg_bit_value_t Register::get_bit(reg_bit_number_t _bit) {
 }
 
 //  getters/setters
+
 reg_t *Register::get_register_ptr() {
     return register_ptr;
 }
