@@ -5,4 +5,5 @@
 !*.h
 !*.md
 !*.sh
+!*.json
 !Makefile
