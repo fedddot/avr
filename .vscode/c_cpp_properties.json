@@ -16,10 +16,13 @@
             "name": "AVR",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/include/**",
-                "${workspaceFolder}/include/uart/**"
+                "${workspaceFolder}/include/**"
             ],
-            "defines": ["__AVR_ATmega328P__"],
+            "defines": [
+                "__AVR_ATmega328P__",
+                "FOSC=16000000UL",
+                "LOW_FUSE=0xEE"
+            ],
             "compilerPath": "/usr/bin/avr-g++",
             "cStandard": "gnu17",
             "cppStandard": "gnu++17",
