@@ -20,19 +20,6 @@
 #define ASCII_LEN 128
 
 
-void USART_Transmit(uint8_t *data, uint8_t num)
-{
-
-    while (num) {
-        while (!(UCSR0A & (1<<UDRE0))) {
-            ;
-        }
-        UDR0 = *data;
-        ++data;
-        --num;
-    }
-}
-
 char *ItoaAnyBaseRecursive(int value, char *str, unsigned int radix)
 {
     if ((value < (int)radix) && (value > -(int)radix))
@@ -75,12 +62,10 @@ char *ItoaBaseTen(int value, char *str)
 
 int main() {
     char *data = (char *)alloca(20);
-    uint8_t datalen = 20;
 
     UART uart = UART();
 
     WDDR |= 1 << WPINNUM;
-    UCSR0B = (1<<RXEN0)|(1<<TXEN0);
     
     while (1)
     {
@@ -88,11 +73,11 @@ int main() {
         _delay_ms(1000);
 
         data = strcpy(data, "baud: ");
-        USART_Transmit((uint8_t *)data, strlen(data));
+        uart.send_bytes((uint8_t *)data, strlen(data));
         data = ItoaBaseTen((int)uart.get_baud_rate(), data);
-        USART_Transmit((uint8_t *)data, strlen(data));
+        uart.send_bytes((uint8_t *)data, strlen(data));
         data = strcpy(data, "\n");
-        USART_Transmit((uint8_t *)data, strlen(data));
+        uart.send_bytes((uint8_t *)data, strlen(data));
         WPORT &= ~(1 << WPINNUM);
         _delay_ms(1000);
     }

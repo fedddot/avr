@@ -2,6 +2,7 @@
 #define _UART_H_
 
 #include <inttypes.h> // int16_t
+#include <stddef.h> // size_t
 
 #define UART_DEFAULT_BAUD_RATE 9600
 
@@ -51,7 +52,6 @@ typedef enum char_size_enum char_size_t;
 typedef enum uart_send_status_enum uart_send_status_t;
 
 class UART {
-
 public:
     // constructors
 
@@ -75,7 +75,10 @@ public:
     char_size_t set_char_size(char_size_t _char_size);
     char_size_t get_char_size(void);
 
-    uart_send_status_t send_char(uart_char_t _uart_char);
+    uart_send_status_t send_bytes(uint8_t *_data, uint16_t _data_size);
+    
+    uint8_t *start_receiver(uint16_t _buff_capacity);
+
 
 };
 

@@ -1,5 +1,6 @@
 #include <avr/sfr_defs.h> // registers sfrs
 #include <avr/interrupt.h> // cli(), sei()
+#include <stdlib.h> // malloc, free
 
 #ifndef FOSC
 #error "FOSC not defined"
@@ -10,6 +11,10 @@
 #endif
 
 #include "uart.h" // interface
+
+uint8_t *buff_base;
+uint8_t *buff_top;
+size_t buff_capacity;
 
 UART::UART() {
 	set_uart_mode(UART_MODE_ASYNC_NORMAL_SPEED);
@@ -27,7 +32,10 @@ UART::UART(uart_mode_t _uart_mode, baud_rate_t _baud_rate,
 	set_baud_rate(_baud_rate);
 	set_parity_mode(_parity_mode);
 	set_stop_bits(_stop_bits);
-	set_char_size(_char_size);	
+	set_char_size(_char_size);
+
+	buff_base = NULL;
+	buff_top = NULL;
 }
 
 uart_mode_t UART::set_uart_mode(uart_mode_t _uart_mode) {
@@ -393,6 +401,55 @@ char_size_t UART::get_char_size(void) {
 	return result;
 }
 
-uart_send_status_t send_char(uart_char_t _uart_char) {
-	// TODO: Implement
+uart_send_status_t UART::send_bytes(uint8_t *_data, uint16_t _data_size) {
+	uint8_t SREG_bckup = SREG;
+
+	cli();
+
+	UCSR0A &= ~((uint8_t)1 << UDRE0);
+	UCSR0B |= (uint8_t)1 << TXEN0;
+
+	while (_data_size) {		
+		while (!(UCSR0A & ((uint8_t)1 << UDRE0)))
+			;
+		UDR0 = *_data;
+
+		++_data;
+		--_data_size;
+	}
+
+	UCSR0B &= ~((uint8_t)1 << TXEN0);
+	SREG = SREG_bckup;
+
+	return UART_SEND_SUCCESS;
 }
+
+uint8_t *UART::start_receiver(uint16_t _buff_capacity) {
+	uint8_t SREG_bckup = SREG;
+	cli();
+
+
+	UCSR0B |= (uint8_t)1 << RXEN0;
+	
+
+
+}
+
+
+ISR(UART0_RX_vect) {
+	uint8_t byte_received = UDR0;
+	if (buff_top - buff_base < buff_capacity)
+	{
+		*buff_top = byte_received;
+		++buff_top;
+	}
+	reti();
+}
+
+// ISR(UART0_TX_vect) {
+	
+// }
+
+// ISR(UART0_UDRE_vect) {
+	
+// }
