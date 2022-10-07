@@ -2,6 +2,7 @@
 #include <util/delay.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "uart.h"
 #include "circbuff.h"
@@ -21,36 +22,36 @@ void clean_buff(char *buff, size_t buff_size) {
     }
 }
 
+char status_str[] = "Controller status:\n\
+\tbuff capacity = %u\n\
+\tbuff size = %u\n\
+\tuart receiver status = %d\n";
+
 int main() {
     UART uart = UART();
-    CircularBuffer buff = CircularBuffer(BUFF_LEN);
+    uart_receiver_status_t receiver_status = UART_RECEIVER_FAILURE;
     char *dest = (char *)malloc(BUFF_LEN * sizeof(char));
-    size_t dest_actual_size = 0;
+    size_t bufsize = 0;
 
-    char str[] = "Last buff read: ";
-
-    WDDR |= 1 << WPINNUM;
-
-    uart.start_receiver(&buff);
-
-    buff.flush();
+    receiver_status = uart.start_receiver(BUFF_LEN);
     
-
-
-    while (1)
-    {
-        WPORT |= 1 << WPINNUM;
-        _delay_ms(1000);
-        WPORT &= ~(1 << WPINNUM);
-        _delay_ms(1000);
-        
-        dest_actual_size = buff.read_bytes(dest, BUFF_LEN);
-        uart.send_bytes((const char *)str, strlen(str));
-        uart.send_bytes((const char *)dest, BUFF_LEN);
-        uart.send_bytes("\n", 1);
-        buff.flush();
+    while (1) {
         clean_buff(dest, BUFF_LEN);
+
+        sprintf(
+            dest, 
+            status_str, 
+            uart.get_buffer_capacity(), 
+            uart.get_buffer_size(), 
+            (int)receiver_status
+        );
+
+        uart.send_bytes(dest, strlen(dest));    
+
+        _delay_ms(1000);
     }
+
+    
 
     return 0;
 }

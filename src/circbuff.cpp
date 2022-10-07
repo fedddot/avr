@@ -2,11 +2,11 @@
 
 #include "circbuff.h" // interface
 
-int CircularBuffer::is_empty(void) {
+int CircBuff::is_empty(void) {
     return NULL == read_ptr;
 }
 
-char *CircularBuffer::next_ptr(const char *ptr) {
+char *CircBuff::next_ptr(const char *ptr) {
     ++ptr;
     if (buffer_ptr + capacity <= ptr) {
         return buffer_ptr;
@@ -14,26 +14,26 @@ char *CircularBuffer::next_ptr(const char *ptr) {
     return (char *)ptr;
 }
 
-CircularBuffer::CircularBuffer(size_t _capacity) {
+CircBuff::CircBuff(size_t _capacity) {
     buffer_ptr = (char *)malloc(sizeof(char) * _capacity);
     capacity = _capacity;
     read_ptr = NULL;
     write_ptr = buffer_ptr;
 }
 
-CircularBuffer::~CircularBuffer() {
+CircBuff::~CircBuff() {
     if (NULL != buffer_ptr) {
         free(buffer_ptr);
         buffer_ptr = NULL;
     }
 }
 
-void CircularBuffer::flush(void) {
+void CircBuff::flush(void) {
     read_ptr = NULL;
     write_ptr = buffer_ptr;
 }
 
-void CircularBuffer::write_byte(char _byte) {
+void CircBuff::write_byte(char _byte) {
     *write_ptr = _byte;
     if (is_empty()) {
         read_ptr = (const char *)write_ptr;
@@ -43,7 +43,7 @@ void CircularBuffer::write_byte(char _byte) {
     write_ptr = next_ptr((const char *)write_ptr);
 }
 
-int CircularBuffer::read_byte(char *_byte_ptr) {
+int CircBuff::read_byte(char *_byte_ptr) {
     if (is_empty() || (NULL == _byte_ptr)) {
         return -1;
     }
@@ -55,7 +55,7 @@ int CircularBuffer::read_byte(char *_byte_ptr) {
     return 0;
 }
 
-size_t CircularBuffer::write_bytes(const char *src, size_t nbytes) {
+size_t CircBuff::write_bytes(const char *src, size_t nbytes) {
     const char *src_end = NULL;
 
     if (NULL == src) {
@@ -72,7 +72,7 @@ size_t CircularBuffer::write_bytes(const char *src, size_t nbytes) {
     return nbytes;
 }
 
-size_t CircularBuffer::read_bytes(char *dest, size_t nbytes) {
+size_t CircBuff::read_bytes(char *dest, size_t nbytes) {
     char *dest_start = NULL;
     char *dest_end = NULL;
 
@@ -94,11 +94,11 @@ size_t CircularBuffer::read_bytes(char *dest, size_t nbytes) {
     return (size_t)(dest - dest_start);
 }
 
-size_t CircularBuffer::get_capacity(void) {
+size_t CircBuff::get_capacity(void) {
     return capacity;
 }
 
-size_t CircularBuffer::get_size(void) {
+size_t CircBuff::get_size(void) {
     if (is_empty()) {
         return 0;
     }

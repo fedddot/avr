@@ -1,15 +1,15 @@
 #ifndef _UART_H_
 #define _UART_H_
 
-#include <inttypes.h> // int16_t
+#include <inttypes.h> // uint32_t, uint8_t
 #include <stddef.h> // size_t
 
-#include "circbuff.h" // CircleBuffer
+#include "circbuff.h" // CircularBuffer
 
 #define UART_DEFAULT_BAUD_RATE 9600
+#define UART_DEFAULT_BUFFER_SIZE 0
 
 typedef uint32_t baud_rate_t;
-typedef uint8_t uart_char_t;
 
 enum uart_mode_enum {
     UART_MODE_ASYNC_NORMAL_SPEED = 0,
@@ -47,11 +47,17 @@ enum uart_send_status_enum {
     UART_SEND_FAILURE = -1
 };
 
+enum uart_receiver_status_enum {
+    UART_RECEIVER_SUCCESS = 0,
+    UART_RECEIVER_FAILURE = -1
+};
+
 typedef enum uart_mode_enum uart_mode_t;
 typedef enum parity_enum parity_t;
 typedef enum stop_bits_enum stop_bits_t;
 typedef enum char_size_enum char_size_t;
 typedef enum uart_send_status_enum uart_send_status_t;
+typedef enum uart_receiver_status_enum uart_receiver_status_t;
 
 class UART {
 private:
@@ -78,10 +84,15 @@ public:
     char_size_t set_char_size(char_size_t _char_size);
     char_size_t get_char_size(void);
 
-    uart_send_status_t send_bytes(const char *_data, size_t _data_size);
+    uart_send_status_t send_bytes(const char *src, size_t nbytes);
     
-    void start_receiver(CircularBuffer *_buff);
+    uart_receiver_status_t start_receiver(size_t buff_capacity);
     void stop_receiver(void);
+
+    size_t get_buffer_capacity(void);
+    size_t get_buffer_size(void);
+    size_t read_buffer(char *dest, size_t nbytes);
+    void flush_buffer(void);
 };
 
 

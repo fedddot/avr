@@ -3,7 +3,7 @@
 
 #include <stddef.h> // size_t
 
-class CircularBuffer {
+class CircBuff {
     char *buffer_ptr;
     size_t capacity;
     const char *read_ptr;
@@ -12,9 +12,9 @@ class CircularBuffer {
     int is_empty(void);
     char *next_ptr(const char *ptr);
 public:
-    CircularBuffer(size_t _capacity);
+    CircBuff(size_t _capacity);
 
-    ~CircularBuffer();
+    ~CircBuff();
 
     void flush(void);
 

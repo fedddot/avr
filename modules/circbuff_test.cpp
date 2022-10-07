@@ -7,7 +7,7 @@
 #define BUFF_SIZE 10
 
 int main(void) {
-    CircularBuffer buff = CircularBuffer(BUFF_SIZE);
+    CircBuff buff = CircBuff(BUFF_SIZE);
     char str1[] = "Kekeke";
     char str2[] = "0123456789101112";
     char *dest = (char *)malloc(BUFF_SIZE * sizeof(char));

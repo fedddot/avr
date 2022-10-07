@@ -1,8 +1,5 @@
 #include <avr/sfr_defs.h> // registers sfrs
 #include <avr/interrupt.h> // cli(), sei()
-#include <stdlib.h> // malloc, free
-
-#include "circbuff.h" // CircularBuffer
 
 #include "uart.h" // interface
 
@@ -14,7 +11,7 @@
 #error "LOW_FUSE not defined"
 #endif
 
-CircularBuffer *buff_ptr = NULL;
+static CircBuff buffer = CircBuff(UART_DEFAULT_BUFFER_SIZE);
 
 UART::UART() {
 	set_uart_mode(UART_MODE_ASYNC_NORMAL_SPEED);
@@ -398,21 +395,25 @@ char_size_t UART::get_char_size(void) {
 	return result;
 }
 
-uart_send_status_t UART::send_bytes(const char *_data, size_t _data_size) {
+uart_send_status_t UART::send_bytes(const char *src, size_t nbytes) {
+	const char *src_end = NULL;
 	uint8_t SREG_bckup = SREG;
 
+	if (NULL == src) {
+		return UART_SEND_FAILURE;
+	}
+	
 	cli();
+	src_end = src + nbytes;
 
 	UCSR0A &= ~((uint8_t)1 << UDRE0);
 	UCSR0B |= (uint8_t)1 << TXEN0;
 
-	while (_data_size) {		
+	while (src_end > src) {
 		while (!(UCSR0A & ((uint8_t)1 << UDRE0)))
 			;
-		UDR0 = *(uint8_t *)_data;
-
-		++_data;
-		--_data_size;
+		UDR0 = *(uint8_t *)src;
+		++src;
 	}
 
 	UCSR0B &= ~((uint8_t)1 << TXEN0);
@@ -421,24 +422,41 @@ uart_send_status_t UART::send_bytes(const char *_data, size_t _data_size) {
 	return UART_SEND_SUCCESS;
 }
 
-void UART::start_receiver(CircularBuffer *_buff) {
+uart_receiver_status_t UART::start_receiver(size_t buff_capacity) {
+	if (1 > buff_capacity) {
+		return UART_RECEIVER_FAILURE;
+	}
+
 	cli();
-
-	buff_ptr = _buff;
+	buffer = CircBuff(buff_capacity);
 	UCSR0B |= ((uint8_t)1 << RXEN0) | ((uint8_t)1 << RXCIE0);
-
 	sei();
+
+	return UART_RECEIVER_SUCCESS;
 }
 
 void UART::stop_receiver(void) {
 	uint8_t SREG_bckup = SREG;
-
 	cli();
-
-	buff_ptr = NULL;
+	buffer.~CircBuff();
 	UCSR0B &= ~(((uint8_t)1 << RXEN0) | ((uint8_t)1 << RXCIE0));
-
 	SREG = SREG_bckup;
+}
+
+size_t UART::get_buffer_capacity(void) {
+	return buffer.get_capacity();
+}
+
+size_t UART::get_buffer_size(void) {
+	return buffer.get_size();
+}
+
+size_t UART::read_buffer(char *dest, size_t nbytes) {
+	return buffer.read_bytes(dest, nbytes);
+}
+
+void UART::flush_buffer(void) {
+	buffer.flush();
 }
 
 ISR(USART_RX_vect) {
@@ -446,6 +464,6 @@ ISR(USART_RX_vect) {
 
 	cli();
 	byte_received = UDR0;
-	buff_ptr->write_byte((char)byte_received);
+	buffer.write_byte((char)byte_received);
 	sei();
 }
