@@ -2,7 +2,17 @@
 
 #include "circbuff.h" // interface
 
-static char *move_ptr_fwd(char *base, size_t base_len, char *ptr);
+int CircularBuffer::is_empty(void) {
+    return NULL == read_ptr;
+}
+
+char *CircularBuffer::next_ptr(const char *ptr) {
+    ++ptr;
+    if (buffer_ptr + capacity <= ptr) {
+        return buffer_ptr;
+    }
+    return (char *)ptr;
+}
 
 CircularBuffer::CircularBuffer(size_t _capacity) {
     buffer_ptr = (char *)malloc(sizeof(char) * _capacity);
@@ -18,58 +28,70 @@ CircularBuffer::~CircularBuffer() {
     }
 }
 
-void CircularBuffer::flush_buff(void) {
+void CircularBuffer::flush(void) {
     read_ptr = NULL;
     write_ptr = buffer_ptr;
 }
 
-size_t CircularBuffer::write_bytes(const char *src, size_t nbytes) {
-    size_t nbytes_bckup = nbytes;
+void CircularBuffer::write_byte(char _byte) {
+    *write_ptr = _byte;
+    if (is_empty()) {
+        read_ptr = (const char *)write_ptr;
+    } else if (read_ptr == write_ptr) {
+        read_ptr = (const char *)next_ptr(read_ptr);
+    }
+    write_ptr = next_ptr((const char *)write_ptr);
+}
 
-    if ((NULL == src) || (1 > nbytes)) {
+int CircularBuffer::read_byte(char *_byte_ptr) {
+    if (is_empty() || (NULL == _byte_ptr)) {
+        return -1;
+    }
+    *_byte_ptr = *read_ptr;
+    read_ptr = (const char *)next_ptr(read_ptr);
+    if (read_ptr == write_ptr) {
+        read_ptr = NULL;
+    }
+    return 0;
+}
+
+size_t CircularBuffer::write_bytes(const char *src, size_t nbytes) {
+    const char *src_end = NULL;
+
+    if (NULL == src) {
         return 0;
     }
 
-    if (NULL == read_ptr) {
-        *write_ptr = *src;
-        read_ptr = (const char *)write_ptr;
-        write_ptr = move_ptr_fwd(buffer_ptr, capacity, write_ptr);
+    src_end = src + nbytes;
+    
+    while (src_end > src) {
+        write_byte(*src);
         ++src;
-        --nbytes;
     }
 
-    while (nbytes) {
-        *write_ptr = *src;
-        write_ptr = move_ptr_fwd(buffer_ptr, capacity, write_ptr);
-        ++src;
-        --nbytes;
-        if (write_ptr == read_ptr) {
-            read_ptr = (const char *)move_ptr_fwd(buffer_ptr, capacity, (char *)read_ptr);
-        }
-    }
-
-    return nbytes_bckup;
+    return nbytes;
 }
 
 size_t CircularBuffer::read_bytes(char *dest, size_t nbytes) {
-    size_t nbytes_bckup = nbytes;
+    char *dest_start = NULL;
+    char *dest_end = NULL;
 
-    if ((NULL == read_ptr) || (NULL == dest) || (1 > nbytes)) {
+    if (NULL == dest) {
         return 0;
     }
 
-    while (nbytes) {
-        *dest = *read_ptr;
-        read_ptr = (const char *)move_ptr_fwd(buffer_ptr, capacity, (char *)read_ptr);
-        ++dest;
-        --nbytes;
-        if (read_ptr == write_ptr) {
-            read_ptr = NULL;
-            write_ptr = buffer_ptr;
+    dest_start = dest;
+    dest_end = dest + nbytes;
+
+    while (dest_end > dest)
+    {
+        if (0 != read_byte(dest)) {
             break;
         }
+        ++dest;
     }
-    return nbytes_bckup - nbytes;
+
+    return (size_t)(dest - dest_start);
 }
 
 size_t CircularBuffer::get_capacity(void) {
@@ -77,31 +99,16 @@ size_t CircularBuffer::get_capacity(void) {
 }
 
 size_t CircularBuffer::get_size(void) {
-    const char *read_runner = NULL;
-    size_t count = 0;
-
-    if (NULL == read_ptr) {
+    if (is_empty()) {
         return 0;
     }
 
-    read_runner = read_ptr;
-    while (read_runner != write_ptr) {
-        read_runner = (const char *)move_ptr_fwd(
-            buffer_ptr, 
-            capacity, 
-            (char *)read_runner
-        );
-        ++count;
+    if (write_ptr > read_ptr) {
+        return (size_t)(write_ptr - read_ptr);
+    } else if (write_ptr < read_ptr) {
+        return capacity - (size_t)(read_ptr - write_ptr);
+    } else {
+        return capacity;
     }
-    return count;
 }
 
-
-
-static char *move_ptr_fwd(char *base, size_t base_len, char *ptr) {
-    ++ptr;
-    if (base + base_len <= ptr) {
-        return base;
-    }
-    return ptr;
-}

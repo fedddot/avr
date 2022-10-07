@@ -2,8 +2,6 @@
 #include <avr/interrupt.h> // cli(), sei()
 #include <stdlib.h> // malloc, free
 
-#include <util/delay.h>
-
 #include "circbuff.h" // CircularBuffer
 
 #include "uart.h" // interface
@@ -448,8 +446,6 @@ ISR(USART_RX_vect) {
 
 	cli();
 	byte_received = UDR0;
-	buff_ptr->write_bytes((const char *)&byte_received, 1);
-	//UCSR0A |= 1 << RXC0;
-
+	buff_ptr->write_byte((char)byte_received);
 	sei();
 }

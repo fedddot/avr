@@ -8,12 +8,18 @@ class CircularBuffer {
     size_t capacity;
     const char *read_ptr;
     char *write_ptr;
+
+    int is_empty(void);
+    char *next_ptr(const char *ptr);
 public:
     CircularBuffer(size_t _capacity);
 
     ~CircularBuffer();
 
-    void flush_buff(void);
+    void flush(void);
+
+    void write_byte(char _byte);
+    int read_byte(char *_byte_ptr);
     
     size_t write_bytes(const char *src, size_t nbytes);
     size_t read_bytes(char *dest, size_t nbytes);
