@@ -2,6 +2,12 @@
 #include <avr/interrupt.h> // cli(), sei()
 #include <stdlib.h> // malloc, free
 
+#include <util/delay.h>
+
+#include "circbuff.h" // CircularBuffer
+
+#include "uart.h" // interface
+
 #ifndef FOSC
 #error "FOSC not defined"
 #endif
@@ -10,11 +16,7 @@
 #error "LOW_FUSE not defined"
 #endif
 
-#include "uart.h" // interface
-
-uint8_t *buff_base;
-uint8_t *buff_top;
-size_t buff_capacity;
+CircularBuffer *buff_ptr = NULL;
 
 UART::UART() {
 	set_uart_mode(UART_MODE_ASYNC_NORMAL_SPEED);
@@ -33,9 +35,6 @@ UART::UART(uart_mode_t _uart_mode, baud_rate_t _baud_rate,
 	set_parity_mode(_parity_mode);
 	set_stop_bits(_stop_bits);
 	set_char_size(_char_size);
-
-	buff_base = NULL;
-	buff_top = NULL;
 }
 
 uart_mode_t UART::set_uart_mode(uart_mode_t _uart_mode) {
@@ -401,7 +400,7 @@ char_size_t UART::get_char_size(void) {
 	return result;
 }
 
-uart_send_status_t UART::send_bytes(uint8_t *_data, uint16_t _data_size) {
+uart_send_status_t UART::send_bytes(const char *_data, size_t _data_size) {
 	uint8_t SREG_bckup = SREG;
 
 	cli();
@@ -412,7 +411,7 @@ uart_send_status_t UART::send_bytes(uint8_t *_data, uint16_t _data_size) {
 	while (_data_size) {		
 		while (!(UCSR0A & ((uint8_t)1 << UDRE0)))
 			;
-		UDR0 = *_data;
+		UDR0 = *(uint8_t *)_data;
 
 		++_data;
 		--_data_size;
@@ -424,32 +423,33 @@ uart_send_status_t UART::send_bytes(uint8_t *_data, uint16_t _data_size) {
 	return UART_SEND_SUCCESS;
 }
 
-uint8_t *UART::start_receiver(uint16_t _buff_capacity) {
-	uint8_t SREG_bckup = SREG;
+void UART::start_receiver(CircularBuffer *_buff) {
 	cli();
 
+	buff_ptr = _buff;
+	UCSR0B |= ((uint8_t)1 << RXEN0) | ((uint8_t)1 << RXCIE0);
 
-	UCSR0B |= (uint8_t)1 << RXEN0;
-	
-
-
+	sei();
 }
 
+void UART::stop_receiver(void) {
+	uint8_t SREG_bckup = SREG;
 
-ISR(UART0_RX_vect) {
-	uint8_t byte_received = UDR0;
-	if (buff_top - buff_base < buff_capacity)
-	{
-		*buff_top = byte_received;
-		++buff_top;
-	}
-	reti();
+	cli();
+
+	buff_ptr = NULL;
+	UCSR0B &= ~(((uint8_t)1 << RXEN0) | ((uint8_t)1 << RXCIE0));
+
+	SREG = SREG_bckup;
 }
 
-// ISR(UART0_TX_vect) {
-	
-// }
+ISR(USART_RX_vect) {
+	uint8_t byte_received = 0;	
 
-// ISR(UART0_UDRE_vect) {
-	
-// }
+	cli();
+	byte_received = UDR0;
+	buff_ptr->write_bytes((const char *)&byte_received, 1);
+	//UCSR0A |= 1 << RXC0;
+
+	sei();
+}

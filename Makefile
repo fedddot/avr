@@ -12,12 +12,24 @@ AVR_EFUSE = 0xFF
 AVR_FOSC = 16000000UL
 AVR_PRM = -mmcu=$(AVR_MCU) -DFOSC=$(AVR_FOSC) -DF_CPU=$(AVR_FOSC) -DLOW_FUSE=$(AVR_LFUSE) -ansi -pedantic-errors -Wall -Wextra -Wcpp
 
-firmware : $(MDL)/firmware.cpp $(SRC)/uart_atmega.cpp
-	$(AVR_CC) $(AVR_PRM) -I$(INCLUDE) $(MDL)/firmware.cpp $(SRC)/uart_atmega.cpp -o firmware.hex
+uart_atmega.o : $(SRC)/uart_atmega.cpp $(INCLUDE)/uart.h
+	$(AVR_CC) $(AVR_PRM) -I$(INCLUDE) -c $< -o $@
+
+circbuff.o : $(SRC)/circbuff.cpp $(INCLUDE)/circbuff.h
+	$(AVR_CC) $(AVR_PRM) -I$(INCLUDE) -c $< -o $@
+
+firmware.o : $(MDL)/firmware.cpp $(INCLUDE)/uart.h $(INCLUDE)/circbuff.h
+	$(AVR_CC) $(AVR_PRM) -I$(INCLUDE) -c $< -o $@
+
+firmware.hex : firmware.o uart_atmega.o circbuff.o
+	$(AVR_CC) $(AVR_PRM) -I$(INCLUDE) $^ -o $@
+
+circbuff_test.out : $(MDL)/circbuff_test.cpp $(SRC)/circbuff.cpp $(INCLUDE)/circbuff.h
+	g++ -ansi -pedantic-errors -Wall -Wextra -g -I$(INCLUDE) $(MDL)/circbuff_test.cpp $(SRC)/circbuff.cpp -o $@
 
 .PHONY: clean
 clean : 
-	rm firmware.hex
+	rm *.hex *.o *.out
 
 PORT_PATH = /dev/bus/usb/001/012
 PART_NUMBER = m328p
