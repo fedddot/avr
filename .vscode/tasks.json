@@ -1,0 +1,78 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "C/C++: avr-g++ build active file",
+			"command": "make",
+			"args": [
+				"${fileBasenameNoExtension}.elf"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: /usr/bin/avr-g++"
+		},
+		{
+			"type": "shell",
+			"label": "C/C++: clean",
+			"command": "make",
+			"args": [
+				"clean"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: /usr/bin/avr-g++"
+		},
+		{
+			"type": "process",
+			"label": "C/C++: start simavr",
+			"command": "make",
+			"args": [
+				"sim_${fileBasenameNoExtension}",
+				"&"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "simulator: simavr"
+		},
+		{
+			"type": "shell",
+			"label": "C/C++: prepare dbg",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"dependsOn": ["C/C++: clean", "C/C++: avr-g++ build active file", "C/C++: start simavr"],
+			"dependsOrder": "sequence",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: /usr/bin/avr-g++"
+		}
+
+	]
+}

@@ -1,18 +1,8 @@
 {
-    "files.associations": {
-        "version.h": "c",
-        "iostream": "cpp",
-        "atomic": "cpp",
-        "cstdint": "cpp",
-        "*.tcc": "cpp",
-        "compare": "cpp",
-        "random": "cpp",
-        "limits": "cpp",
-        "new": "cpp",
-        "numeric": "cpp",
-        "cmath": "cpp",
-        "tuple": "cpp",
-        "type_traits": "cpp",
-        "utility": "cpp"
-    }
+    "AVR.reporter.arguments": [
+        "-C"
+    ],
+    "AVR.source.compiler": "/usr/bin/avr-g++",
+    "AVR.programmer.tool": "/usr/bin/avrdude",
+    "AVR.source.libraries": []
 }

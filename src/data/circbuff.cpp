@@ -1,6 +1,6 @@
 #include <stdlib.h> // malloc, free
 
-#include "circbuff.h" // interface
+#include "data/circbuff.h" // interface
 
 int CircBuff::is_empty(void) {
     return NULL == read_ptr;

@@ -1,14 +1,10 @@
 #include <avr/sfr_defs.h> // registers sfrs
 #include <avr/interrupt.h> // cli(), sei()
 
-#include "uart.h" // interface
+#include "io/uart.h" // interface
 
-#ifndef FOSC
-#error "FOSC not defined"
-#endif
-
-#ifndef LOW_FUSE
-#error "LOW_FUSE not defined"
+#ifndef F_CPU
+#error "F_CPU not defined"
 #endif
 
 static CircBuff buffer = CircBuff(UART_DEFAULT_BUFFER_SIZE);
@@ -159,7 +155,7 @@ baud_rate_t UART::set_baud_rate(baud_rate_t _baud_rate) {
 		return get_baud_rate();
 	}
 
-	UBRR = (uint16_t)((uint32_t)FOSC / (uint32_t)_baud_rate / divider);
+	UBRR = (uint16_t)((uint32_t)F_CPU / (uint32_t)_baud_rate / divider);
 	if (UBRR > 0) {
 		UBRR -= 1;
 	}
@@ -202,7 +198,7 @@ baud_rate_t UART::get_baud_rate(void) {
 		return (baud_rate_t)(-1);
 	}
 
-	result = (baud_rate_t)((uint32_t)FOSC / divider / ((uint32_t)UBRR + 1));
+	result = (baud_rate_t)((uint32_t)F_CPU / divider / ((uint32_t)UBRR + 1));
 	SREG = SREG_bckup;
 	return result;
 }

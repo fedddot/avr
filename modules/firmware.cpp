@@ -4,8 +4,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "uart.h"
-#include "circbuff.h"
+#include "io/uart.h"
+#include "data/circbuff.h"
 
 #define WPINNUM 5
 #define WPORT PORTB

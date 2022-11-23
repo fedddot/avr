@@ -1,32 +1,16 @@
 {
     "configurations": [
         {
-            "name": "Linux",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "./include"
-            ],
-            "defines": [],
-            "compilerPath": "/usr/bin/g++",
-            "cStandard": "gnu17",
-            "cppStandard": "gnu++17",
-            "intelliSenseMode": "linux-gcc-x64"
-        },
-        {
             "name": "AVR",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/include/**"
+                "${workspaceFolder}/**"
             ],
-            "defines": [
-                "__AVR_ATmega328P__",
-                "FOSC=16000000UL",
-                "LOW_FUSE=0xEE"
-            ],
+            "defines": ["F_CPU=8000000UL", "__AVR_ATmega328P__"],
             "compilerPath": "/usr/bin/avr-g++",
-            "cStandard": "gnu17",
+            "cStandard": "c89",
             "cppStandard": "gnu++17",
-            "intelliSenseMode": "linux-gcc-x64"
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

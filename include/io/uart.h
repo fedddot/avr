@@ -4,7 +4,7 @@
 #include <inttypes.h> // uint32_t, uint8_t
 #include <stddef.h> // size_t
 
-#include "circbuff.h" // CircularBuffer
+#include "data/circbuff.h" // CircularBuffer
 
 #define UART_DEFAULT_BAUD_RATE 9600
 #define UART_DEFAULT_BUFFER_SIZE 0
